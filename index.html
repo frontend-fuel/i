@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ESP32 IoT Project Code</title>
+  <title>ESP32 IoT Project Codes</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -11,7 +11,7 @@
     }
     .container {
       max-width: 900px;
-      margin: auto;
+      margin: 20px auto;
       background: white;
       padding: 20px;
       border-radius: 12px;
@@ -21,7 +21,7 @@
       background-color: #2563eb;
       color: white;
       padding: 10px 16px;
-      margin: 10px 0;
+      margin: 10px 5px 0 0;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -44,17 +44,16 @@
 <body>
 
 <div class="container">
-  <button onclick="toggleCode()">Show/Hide Code</button>
-  <button onclick="copyCode()">Copy Code</button>
-
-  <pre id="code">
+  <h2>ESP32 IoT Project - Version 1</h2>
+  <button onclick="toggleCode('code1')">Show/Hide Code</button>
+  <button onclick="copyCode('code1')">Copy Code</button>
+  <pre id="code1">
 #include &lt;WiFi.h&gt;
 #include &lt;HTTPClient.h&gt;
 #include "DHT.h"
 
 #define WIFI_SSID "IOT LAB"
 #define WIFI_PASSWORD "iotlab@svcet"
-
 #define SERVER_URL "https://console.thingzmate.com/api/v1/device-types/3542/devices/exp-3/uplink"
 #define DOWNLINK_URL "https://console.thingzmate.com/api/v1/device-types/3542/devices/exp-3/downlink"
 #define AUTH_TOKEN "Bearer 1aa521bb0add1a5e3366ed44410885c8"
@@ -128,15 +127,16 @@ void loop() {
   }
   http.end();
 
-  delay(600);  // wait 1 minute
+  delay(60000);  // wait 1 minute
 }
   </pre>
 </div>
-  <div class="container">
-  <button onclick="toggleCode()">Show/Hide Code</button>
-  <button onclick="copyCode()">Copy Code</button>
 
-  <pre id="code">
+<div class="container">
+  <h2>ESP32 IoT Project - Version 2</h2>
+  <button onclick="toggleCode('code2')">Show/Hide Code</button>
+  <button onclick="copyCode('code2')">Copy Code</button>
+  <pre id="code2">
 #include &lt;WiFi.h&gt;
 #include &lt;HTTPClient.h&gt;
 #include "DHT.h"
@@ -169,7 +169,7 @@ void loop() {
   float t = dht.readTemperature();
   float h = dht.readHumidity();
 
-  if (!isnan(t) &amp;&amp; !isnan(h)) {
+  if (!isnan(t) && !isnan(h)) {
     Serial.printf("Temp: %.1f C, Humidity: %.1f\n", t, h);
 
     HTTPClient http;
@@ -189,7 +189,7 @@ void loop() {
   http.addHeader("Authorization", AUTH_TOKEN);
   int res = http.GET();
 
-  if (res &gt; 0) {
+  if (res > 0) {
     String r = http.getString();
     Serial.println("Downlink: " + r);
     digitalWrite(LED_PIN, r.indexOf("1") != -1 ? HIGH : LOW);
@@ -204,15 +204,14 @@ void loop() {
   </pre>
 </div>
 
-
 <script>
-  function toggleCode() {
-    const codeBlock = document.getElementById('code');
-    codeBlock.style.display = (codeBlock.style.display === 'block') ? 'none' : 'block';
+  function toggleCode(id) {
+    const codeBlock = document.getElementById(id);
+    codeBlock.style.display = codeBlock.style.display === 'block' ? 'none' : 'block';
   }
 
-  function copyCode() {
-    const codeText = document.getElementById('code').textContent;
+  function copyCode(id) {
+    const codeText = document.getElementById(id).textContent;
     navigator.clipboard.writeText(codeText).then(() => {
       alert("Code copied to clipboard!");
     }).catch(err => {
