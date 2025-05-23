@@ -132,6 +132,78 @@ void loop() {
 }
   </pre>
 </div>
+  <div class="container">
+  <button onclick="toggleCode()">Show/Hide Code</button>
+  <button onclick="copyCode()">Copy Code</button>
+
+  <pre id="code">
+#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt;
+#include "DHT.h"
+
+#define WIFI_SSID "IOT LAB"
+#define WIFI_PASSWORD "iotlab@svcet"
+#define SERVER_URL "https://console.thingzmate.com/api/v1/device-types/3542/devices/exp-3/uplink"
+#define DOWNLINK_URL "https://console.thingzmate.com/api/v1/device-types/3542/devices/exp-3/downlink"
+#define AUTH_TOKEN "Bearer 1aa521bb0add1a5e3366ed44410885c8"
+
+#define DHTPIN 26
+#define DHTTYPE DHT11
+#define LED_PIN 2
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {   
+  Serial.begin(115200);
+  dht.begin();
+  pinMode(LED_PIN, OUTPUT);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected!");
+}
+
+void loop() {
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+
+  if (!isnan(t) &amp;&amp; !isnan(h)) {
+    Serial.printf("Temp: %.1f C, Humidity: %.1f\n", t, h);
+
+    HTTPClient http;
+    http.begin(SERVER_URL);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("Authorization", AUTH_TOKEN);
+    String payload = "{\"temperature\":" + String(t) + ",\"humidity\":" + String(h) + "}";
+    int res = http.POST(payload);
+    Serial.printf("Sent data, response code: %d\n", res);
+    http.end();
+  } else {
+    Serial.println("Error reading sensor");
+  }
+
+  HTTPClient http;
+  http.begin(DOWNLINK_URL);
+  http.addHeader("Authorization", AUTH_TOKEN);
+  int res = http.GET();
+
+  if (res &gt; 0) {
+    String r = http.getString();
+    Serial.println("Downlink: " + r);
+    digitalWrite(LED_PIN, r.indexOf("1") != -1 ? HIGH : LOW);
+    Serial.println(r.indexOf("1") != -1 ? "LED ON" : "LED OFF");
+  } else {
+    Serial.printf("Downlink error: %d\n", res);
+  }
+  http.end();
+
+  delay(60000); // Wait 1 minute
+}
+  </pre>
+</div>
+
 
 <script>
   function toggleCode() {
