@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ESP32 IoT Project Codes</title>
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -11,17 +11,21 @@
     }
     .container {
       max-width: 900px;
-      margin: 20px auto;
+      margin: auto;
       background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #1e40af;
     }
     button {
       background-color: #2563eb;
       color: white;
       padding: 10px 16px;
-      margin: 10px 5px 0 0;
+      margin: 10px 5px 10px 0;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -44,7 +48,7 @@
 <body>
 
 <div class="container">
-  <h2>ESP32 IoT Project - Version 1</h2>
+  <h2>1</h2>
   <button onclick="toggleCode('code1')">Show/Hide Code</button>
   <button onclick="copyCode('code1')">Copy Code</button>
   <pre id="code1">
@@ -133,7 +137,7 @@ void loop() {
 </div>
 
 <div class="container">
-  <h2>ESP32 IoT Project - Version 2</h2>
+  <h2>2</h2>
   <button onclick="toggleCode('code2')">Show/Hide Code</button>
   <button onclick="copyCode('code2')">Copy Code</button>
   <pre id="code2">
@@ -144,7 +148,6 @@ void loop() {
 #define WIFI_SSID "IOT LAB"
 #define WIFI_PASSWORD "iotlab@svcet"
 #define SERVER_URL "https://console.thingzmate.com/api/v1/device-types/3542/devices/exp-3/uplink"
-#define DOWNLINK_URL "https://console.thingzmate.com/api/v1/device-types/3542/devices/exp-3/downlink"
 #define AUTH_TOKEN "Bearer 1aa521bb0add1a5e3366ed44410885c8"
 
 #define DHTPIN 26
@@ -153,10 +156,13 @@ void loop() {
 
 DHT dht(DHTPIN, DHTTYPE);
 
-void setup() {   
+void setup() {
   Serial.begin(115200);
   dht.begin();
   pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  Serial.print("Connecting to WiFi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -172,6 +178,16 @@ void loop() {
   if (!isnan(t) && !isnan(h)) {
     Serial.printf("Temp: %.1f C, Humidity: %.1f\n", t, h);
 
+    // Turn LED ON if temp > 30
+    if (t > 30) {
+      digitalWrite(LED_PIN, HIGH);
+      Serial.println("LED ON (Temp > 30°C)");
+    } else {
+      digitalWrite(LED_PIN, LOW);
+      Serial.println("LED OFF (Temp ≤ 30°C)");
+    }
+
+    // Send data to ThingzMate
     HTTPClient http;
     http.begin(SERVER_URL);
     http.addHeader("Content-Type", "application/json");
@@ -184,22 +200,7 @@ void loop() {
     Serial.println("Error reading sensor");
   }
 
-  HTTPClient http;
-  http.begin(DOWNLINK_URL);
-  http.addHeader("Authorization", AUTH_TOKEN);
-  int res = http.GET();
-
-  if (res > 0) {
-    String r = http.getString();
-    Serial.println("Downlink: " + r);
-    digitalWrite(LED_PIN, r.indexOf("1") != -1 ? HIGH : LOW);
-    Serial.println(r.indexOf("1") != -1 ? "LED ON" : "LED OFF");
-  } else {
-    Serial.printf("Downlink error: %d\n", res);
-  }
-  http.end();
-
-  delay(60000); // Wait 1 minute
+  delay(60000);  // Delay for 1 minute
 }
   </pre>
 </div>
@@ -207,7 +208,7 @@ void loop() {
 <script>
   function toggleCode(id) {
     const codeBlock = document.getElementById(id);
-    codeBlock.style.display = codeBlock.style.display === 'block' ? 'none' : 'block';
+    codeBlock.style.display = (codeBlock.style.display === 'block') ? 'none' : 'block';
   }
 
   function copyCode(id) {
